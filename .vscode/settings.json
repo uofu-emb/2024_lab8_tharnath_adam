@@ -38,7 +38,8 @@
     "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
     "raspberry-pi-pico.python3Path": "python3",
     "files.associations": {
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "intctrl.h": "c"
     },
     "python.autoComplete.extraPaths": [
         "/home/tharnath/build/alphabot_description",

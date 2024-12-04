@@ -2,12 +2,19 @@
 #include <hardware/regs/intctrl.h>
 #include <stdio.h>
 #include <pico/stdlib.h>
+#include <FreeRTOS.h>
+#include <task.h>
+#include <queue.h>
+
+#define CALLBACK_TASK_PRIORITY      ( tskIDLE_PRIORITY + 1UL )
+#define CALLBACK_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
 static struct can2040 cbus;
+QueueHandle_t callbackQueue;
 
 static void can2040_cb(struct can2040 *cd, uint32_t notify, struct can2040_msg *msg)
 {
-    // Put your code here....
+
 }
 
 static void PIOx_IRQHandler(void)
@@ -32,4 +39,50 @@ void canbus_setup(void)
 
     // Start canbus
     can2040_start(&cbus, sys_clock, bitrate, gpio_rx, gpio_tx);
+}
+
+void callback_thread(void *params)
+{
+    struct can2040_msg msg;
+    for (;;)
+    {
+        if (xQueueReceive(callbackQueue, &msg, portMAX_DELAY) == pdTRUE)
+        {
+            //Get CAN msg and print?
+        }
+    }
+}
+
+
+void transmit_can(void *params)
+{
+    vTaskDelay(pdMS_TO_TICKS(5000));
+    struct can2040_msg transmit_msg;
+    transmit_msg.id = 32;
+    transmit_msg.dlc = 2;
+    transmit_msg.data[0] = 32;
+    transmit_msg.data[1] = 43;
+    while(true){
+        int ret = can2040_transmit(&cbus, &transmit_msg);
+        if(ret == 0){    
+            printf("success");
+        }else {
+            printf("failed %d \n", ret);
+        }
+        vTaskDelay(pdMS_TO_TICKS(1000));
+    }
+}
+
+
+int main(void)
+{
+    stdio_init_all();
+    hard_assert(cyw43_arch_init() == PICO_OK);
+    TaskHandle_t callback;
+    canbus_setup();
+    xTaskCreate(transmit_can, "transmit_can",
+                CALLBACK_TASK_STACK_SIZE, NULL, CALLBACK_TASK_PRIORITY, &callback);
+    callbackQueue = xQueueCreate(100, sizeof(struct can2040_msg));
+    vTaskStartScheduler();
+	return 0;
 }

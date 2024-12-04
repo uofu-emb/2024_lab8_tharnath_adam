@@ -39,7 +39,10 @@
     "raspberry-pi-pico.python3Path": "python3",
     "files.associations": {
         "freertos.h": "c",
-        "intctrl.h": "c"
+        "intctrl.h": "c",
+        "stdio.h": "c",
+        "task.h": "c",
+        "queue.h": "c"
     },
     "python.autoComplete.extraPaths": [
         "/home/tharnath/build/alphabot_description",
